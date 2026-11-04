@@ -2,10 +2,16 @@
    ID ごとに最後の基準日の境界を、nlftp.boundary.municipality（国土数値情報 N03 の最新版）と重ねる。
    面積は度の面積を境界の重心の緯度で平方キロメートルに直す。 #}
 
-with last_boundary as (
-    select geoshape_city_id, reference_date, source, geometry
+with last_date as (
+    select geoshape_city_id, max(reference_date) as reference_date
     from {{ ref('boundary') }}
-    qualify row_number() over (partition by geoshape_city_id order by reference_date desc) = 1
+    group by geoshape_city_id
+),
+
+last_boundary as (
+    select b.geoshape_city_id, b.reference_date, b.source, b.geometry
+    from {{ ref('boundary') }} as b
+    semi join last_date as l using (geoshape_city_id, reference_date)
 ),
 
 piece as (

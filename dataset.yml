@@ -64,7 +64,7 @@ annotations:
         municipality は 1 行が 1 つの Geoshape 市区町村 ID。名前（full_name、表記ゆれは name_variants）と都道府県で引き、
         valid_from・valid_to で時期を絞る。同じ名前の村が別の県や郡に何度も出てくるので、名前だけで 1 件に決めない。
         現在の市区町村は current_city_code（代表点が入る市区町村）か、current_overlap の past_share（面積の割合）で見る。
-        boundary は基準日ごとの境界。1920 年より前と、1920〜1968 年の 12 月 31 日の時点は行政界変遷データベースの範囲（一部の県）だけ。
+        boundary は基準日ごとの境界。1889〜1919 年は一部の県だけで、1920 年から全国を覆う。地図にするときは reference_date で 1 時点に絞る。
       synonyms: [旧市町村, 合併前の市町村, 市町村合併の履歴, 歴史的行政区域, Geoshape 市区町村 ID]
       examples:
         - 合併前の村が今のどの市に入っているか知りたい

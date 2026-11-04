@@ -53,21 +53,35 @@ def download_municipality() -> None:
 
 
 def to_parquet(topojson: Path, date: str, out: Path) -> int:
-    """TopoJSON の市区町村境界を、基準日を付けた Parquet に書く。行数を返す。"""
+    """TopoJSON の市区町村境界を、基準日を付けた Parquet に書く。行数を返す。
+
+    - 属性は基準日の出典（国土数値情報・行政界変遷データベース）で列が違うので JSON で持つ
+    - 座標の丸めで自己交差などの壊れた形が 2〜3% あるので、直してポリゴンだけを残す
+    - 同じ ID の形が複数あること（1920 年の舌辛村と舌辛村他）があるので、形は合わせ、属性は面積の大きい方を取る
+    """
     con = duckdb.connect()
-    con.execute("INSTALL spatial; LOAD spatial")
+    con.execute("INSTALL spatial; LOAD spatial; SET enable_progress_bar = false")
     with replacing(out) as partial:
         con.execute(
             f"""
             COPY (
+                WITH t AS (SELECT * EXCLUDE (OGC_FID) FROM ST_Read(?)),
+                fixed AS (
+                    SELECT
+                        id,
+                        -- null の値は消える（RFC 7386）ので、形を外すのに使う
+                        json_merge_patch(to_json(t), '{{"geom": null}}') AS properties,
+                        ST_Multi(ST_CollectionExtract(ST_MakeValid(geom), 3)) AS geom
+                    FROM t
+                )
                 SELECT
                     strptime('{date}', '%Y%m%d')::DATE AS reference_date,
-                    -- 属性は基準日の出典（国土数値情報・行政界変遷データベース）で列が違うので JSON で持つ。
-                    -- null の値は消える（RFC 7386）ので、形を外すのに使う
-                    json_merge_patch(to_json(t), '{{"geom": null}}') AS properties,
-                    ST_AsWKB(geom) AS geometry
-                FROM (SELECT * EXCLUDE (OGC_FID) FROM ST_Read(?)) AS t
-            ) TO '{partial}' (FORMAT parquet)
+                    arg_max(properties, ST_Area(geom)) AS properties,
+                    ST_AsWKB(CASE WHEN count(*) = 1 THEN any_value(geom) ELSE ST_Multi(ST_Union_Agg(geom)) END) AS geometry
+                FROM fixed
+                GROUP BY id
+                ORDER BY id
+            ) TO '{partial}' (FORMAT parquet, COMPRESSION zstd)
             """,
             [str(topojson)],
         )
