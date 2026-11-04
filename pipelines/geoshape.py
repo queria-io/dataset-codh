@@ -2,7 +2,7 @@
 
 1. municipality: GeoNLP 地名語辞書の形の ID 一覧（geoshape-city-geolod.csv）をそのまま保存する
 2. boundary: 基準日ごとの全国の市区町村境界（jp_city.h.topojson、111 時点）を
-   基準日ごとの Parquet（形は WKB）にする。Parquet がある基準日は取り直さない
+   基準日ごとの Parquet（形は WKB）にする。今の BOUNDARY_FORMAT で書いた Parquet がある基準日は取り直さない
 
 出力:
 - data/codh/municipality.csv
@@ -28,6 +28,9 @@ MUNICIPALITY_URL = "https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/geoshap
 USER_AGENT = "dataset-codh (+https://github.com/queria-io/dataset-codh)"
 OUT = Path("data/codh")
 DATE_LINK = re.compile(r'href="(\d{8})\.html"')
+# to_parquet の出力の中身（形の直し方・列）を変えたら上げる。Parquet に書いておき、
+# 違う値の Parquet は取得済みとして使い回さずに作り直す
+BOUNDARY_FORMAT = "2"
 
 
 def reference_dates(html: str) -> list[str]:
@@ -69,8 +72,8 @@ def to_parquet(topojson: Path, date: str, out: Path) -> int:
                 fixed AS (
                     SELECT
                         id,
-                        -- null の値は消える（RFC 7386）ので、形を外すのに使う
-                        json_merge_patch(to_json(t), '{{"geom": null}}') AS properties,
+                        -- 形は JSON に入れない（入れると WKT の文字列にしてから捨てることになる）
+                        to_json(struct_pack(*COLUMNS(* EXCLUDE (geom)))) AS properties,
                         ST_Multi(ST_CollectionExtract(ST_MakeValid(geom), 3)) AS geom
                     FROM t
                 )
@@ -81,7 +84,7 @@ def to_parquet(topojson: Path, date: str, out: Path) -> int:
                 FROM fixed
                 GROUP BY id
                 ORDER BY id
-            ) TO '{partial}' (FORMAT parquet, COMPRESSION zstd)
+            ) TO '{partial}' (FORMAT parquet, COMPRESSION zstd, KV_METADATA {{codh_format: '{BOUNDARY_FORMAT}'}})
             """,
             [str(topojson)],
         )
@@ -89,6 +92,16 @@ def to_parquet(topojson: Path, date: str, out: Path) -> int:
         if rows == 0:
             raise RuntimeError(f"{date}: 境界が 0 件")
     return rows
+
+
+def is_current_format(path: Path) -> bool:
+    """path が今の to_parquet で書いた Parquet か。"""
+    if not path.exists():
+        return False
+    found = duckdb.execute(
+        "SELECT value FROM parquet_kv_metadata(?) WHERE key = 'codh_format'", [str(path)]
+    ).fetchall()
+    return found == [(BOUNDARY_FORMAT.encode(),)]
 
 
 def download_boundary() -> None:
@@ -101,7 +114,7 @@ def download_boundary() -> None:
     (OUT / "work").mkdir(parents=True, exist_ok=True)
     for date in dates:
         out = OUT / "boundary" / f"{date}.parquet"
-        if out.exists():
+        if is_current_format(out):
             continue
         topojson = OUT / "work" / f"{date}.topojson"
         download(f"{BASE_URL}/topojson/{date}/jp_city.h.topojson", topojson, user_agent=USER_AGENT)

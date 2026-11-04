@@ -26,7 +26,7 @@ parsed as (
         case length(valid_from) when 10 then 'day' when 7 then 'month' when 4 then 'year' end as valid_from_precision,
         cast(rpad(nullif(valid_to, ''), 10, substr('-01-01', length(valid_to) - 3)) as date) as valid_to,
         case length(valid_to) when 10 then 'day' when 7 then 'month' when 4 then 'year' end as valid_to_precision,
-        valid_to is null as is_current,
+        nullif(valid_to, '') is null as is_current,
         cast(longitude as double) as lng,
         cast(latitude as double) as lat,
         string_split(description, '/') as point_parts,

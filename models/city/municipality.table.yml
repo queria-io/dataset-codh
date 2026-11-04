@@ -36,7 +36,7 @@ fields:
     annotations: { queria: { semantic: { role: entity, name: prefecture } } }
   - name: county_or_city
     title: 郡・政令指定都市
-    description: 町村は郡名、政令指定都市の区は市名。市は NULL
+    description: 町村は郡名、政令指定都市とその区は市名（札幌市）。そのほかの市は NULL
   - name: name
     title: 市区町村名
     description: 接尾辞を除いた名前（員弁）
