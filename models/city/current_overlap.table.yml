@@ -1,0 +1,39 @@
+schema: city
+name: current_overlap
+title: 過去の市区町村と現在の市区町村の重なり
+description: |-
+  過去の市区町村が、現在のどの市区町村にどれだけ入っているか。1 行が 1 つの Geoshape 市区町村 ID と現在の市区町村の 1 組。
+  ID ごとに最後の基準日の境界（boundary）を、現在の市区町村の境界（nlftp.boundary.municipality、国土数値情報 N03 の最新版。政令指定都市は区）と重ねた。
+  past_share は過去の市区町村の面積のうち現在の市区町村に入る割合で、CODH のページの「過去の行政区域と重なる現在の市区町村一覧」と同じ計算。
+  元の資料が違う境界を重ねるので、境界沿いに数 % 以下の小さな重なりが出る。合併先を 1 つに決めるときは past_share の大きい行を使う。
+  境界の無い ID（行政界変遷データベースの範囲外で 1920 年より前に消えた市町村など）は行が無い。そのときは municipality の current_city_code（代表点）を使う。
+  現存する市区町村も入る（自分自身とほぼ 100% で重なる）。
+
+  出典: 『歴史的行政区域データセットβ版』（CODH作成） doi:10.20676/00000447 の境界と、国土数値情報「行政区域データ」（国土交通省）。Queria が重ねて作成した。
+primary_key: [geoshape_city_id, current_city_code]
+fields:
+  - name: geoshape_city_id
+    title: Geoshape 市区町村 ID
+  - name: boundary_date
+    title: 重ねた境界の基準日
+    description: その ID の最後の基準日
+  - name: boundary_source
+    title: 重ねた境界の出典
+    description: n03 / hensen
+    annotations: { queria: { semantic: { role: dimension } } }
+  - name: current_city_code
+    title: 現在の市区町村コード（5 桁）
+    annotations: { queria: { semantic: { role: entity, name: city } } }
+  - name: current_lg_code
+    title: 現在の全国地方公共団体コード
+    annotations: { queria: { semantic: { role: entity, name: city } } }
+  - name: overlap_area_km2
+    title: 重なりの面積
+    description: km²。度の面積を境界の重心の緯度で換算した値
+    annotations: { queria: { semantic: { role: measure, agg: sum } } }
+  - name: past_share
+    title: 過去の市区町村に占める割合
+    description: 0〜1。重なりの面積 / 過去の市区町村の面積
+  - name: current_share
+    title: 現在の市区町村に占める割合
+    description: 0〜1。重なりの面積 / 現在の市区町村の面積

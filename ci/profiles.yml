@@ -1,0 +1,18 @@
+# PR のビルド確認用。公開ストレージには書かず、手元の DuckDB ファイルに作る
+codh:
+  target: ci
+  outputs:
+    ci:
+      type: duckdb
+      path: target/codh.duckdb
+      schema: main
+      threads: 1
+      extensions:
+        - httpfs
+        - ducklake
+        - spatial
+      attach:
+        - path: "ducklake:https://data.queria.io/datasets/queria/nlftp/ducklake.duckdb"
+          alias: nlftp
+          is_ducklake: true
+          read_only: true

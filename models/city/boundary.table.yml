@@ -1,0 +1,46 @@
+schema: city
+name: boundary
+title: 市区町村の境界（基準日ごと）
+description: |-
+  歴史的行政区域データセットβ版の、基準日ごとの市区町村の境界。1 行が 1 基準日の 1 市区町村で、municipality と geoshape_city_id で結合する。
+  基準日は 1889 年 12 月 31 日から 2023 年 1 月 1 日までの 111 時点。出典が 2 つあり、source で分かれる。
+  - n03: 国土数値情報「行政区域データ」。1920 年以降の国勢調査の年と、1970 年以降の時点。全国を覆う
+  - hensen: 筑波大学「行政界変遷データベース」。1889〜1968 年の各年 12 月 31 日。1995 年の町丁字界を単位に所属を年ごとに記録したもので、収録している地域は一部の県だけ（1889 年は 371 市町村）
+  同じ年に 2 つの出典の時点があるとき（1950 年 10 月 1 日と 12 月 31 日など）、作り方が違うので境界は一致しない。1985 年以前の境界は 1995 年以降と元の資料が違い、隣の市区町村と小さく重なったり離れたりすることがある。
+  境界は CODH が配布する全国の TopoJSON のうち高解像度のもの（jp_city.h）で、座標は約 3m 単位に丸められている。小さな飛地が省かれていることがある。丸めで壊れた形（自己交差など、全体の約 2.5%）は ST_MakeValid で直している。同じ基準日に同じ ID の形が複数あるもの（1920 年の舌辛村など）は 1 つに合わせている。
+  政令指定都市は区の単位。所属未定地（municipality に無い ID）は入れていない。
+
+  出典: 『歴史的行政区域データセットβ版』（CODH作成） doi:10.20676/00000447 の基準日ごとの市区町村境界（TopoJSON）。元は国土数値情報「行政区域データ」（国土交通省）と筑波大学「行政界変遷データベース」。Queria が表に変換して作成した。
+primary_key: [reference_date, geoshape_city_id]
+sources:
+  - path: https://geoshape.ex.nii.ac.jp/city/time/
+fields:
+  - name: reference_date
+    title: 基準日
+    description: hensen は年だけが分かっていて、12 月 31 日にしてある
+  - name: geoshape_city_id
+    title: Geoshape 市区町村 ID
+  - name: source
+    title: 境界の出典
+    description: n03（国土数値情報 行政区域データ）、hensen（行政界変遷データベース）
+    annotations: { queria: { semantic: { role: dimension } } }
+  - name: prefecture
+    title: 都道府県
+    description: その時点の原典の値
+    annotations: { queria: { semantic: { role: entity, name: prefecture } } }
+  - name: subprefecture
+    title: 支庁・振興局
+    description: 北海道の支庁・振興局など。その時点の原典の値
+  - name: county_or_city
+    title: 郡・政令指定都市
+    description: その時点の原典の値。hensen では郡が複数（安蘇郡/都賀郡）のことがある
+  - name: name
+    title: 市区町村名
+    description: その時点の原典の値（接尾辞つき）
+  - name: city_code
+    title: 市区町村コード（5 桁）
+    description: その時点の原典の値。コードの無い市町村は NULL
+    annotations: { queria: { semantic: { role: entity, name: city } } }
+  - name: geometry
+    title: 境界
+    description: マルチポリゴン（経緯度）

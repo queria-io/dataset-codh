@@ -1,0 +1,72 @@
+# この dataset.yml は fdl commit が読む（FDL の dataset.json を YAML で書いたもの）。
+# 表の説明は models/ の *.table.yml に書く。表と列の型・NULL・行数は fdl commit がカタログから埋める。
+# Queria だけの項目（テーマ・カバー・列の意味）は annotations.queria に書く。
+name: codh
+title: 歴史的行政区域データセット（CODH）
+description: |-
+  ROIS-DS 人文学オープンデータ共同利用センター（CODH）の「歴史的行政区域データセットβ版」。
+  1889 年の市制・町村制以降に存在した市区町村に Geoshape 市区町村 ID を付け、有効期間・代表点・基準日ごとの境界を収録する。
+  合併や改称で消えた市町村も 1 つの ID で引ける。代表点と境界から、過去の市町村が現在のどの市区町村に入るかを付けている。
+
+  出典: 『歴史的行政区域データセットβ版』（CODH作成） doi:10.20676/00000447（https://geoshape.ex.nii.ac.jp/city/）。
+  Queria が市区町村 ID の一覧（GeoNLP 地名語辞書の形）と基準日ごとの全国の境界（TopoJSON）を表に変換し、
+  国土数値情報「行政区域データ」（nlftp データセットの boundary.municipality）と重ねて作成した。
+  CC BY 4.0 で提供されている。境界のうち国土数値情報「行政区域データ」から作られた部分は国土数値情報の利用規約に従う。
+keywords:
+  - 市区町村
+  - 行政区域
+  - 市町村合併
+  - 廃置分合
+  - 旧市町村
+  - 境界
+  - 歴史地名
+  - Geoshape
+  - CODH
+homepage: https://github.com/queria-io/dataset-codh
+language: ja
+
+licenses:
+  - CC-BY-4.0
+  - JP-MLIT-NLFTP
+
+sources:
+  - title: 歴史的行政区域データセットβ版（CODH）
+    path: https://geoshape.ex.nii.ac.jp/city/
+  - title: 歴史的行政区域データセットβ版 データセット（CODH）
+    path: https://geoshape.ex.nii.ac.jp/city/dataset/
+  - title: 歴史的行政区域データセットβ版地名辞書（GeoNLP）
+    path: https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/
+  - title: 国土数値情報 行政区域データ（国土交通省）
+    path: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-v3_1.html
+
+contributors:
+  - title: ROIS-DS 人文学オープンデータ共同利用センター（CODH）
+    path: https://codh.rois.ac.jp/
+    roles: [rightsHolder]
+  - title: 国土交通省
+    path: https://nlftp.mlit.go.jp/
+    roles: [rightsHolder]
+
+spatial_coverage: [JP]
+update_frequency: irregular
+
+schemas:
+  - name: city
+    title: 歴史的行政区域
+
+annotations:
+  queria:
+    themes: [land_climate]
+    cover: 🗾
+    ai_context:
+      instructions: |
+        合併前の市町村名や昔の住所を、現在の市区町村に読み替えるのに使う。
+        municipality は 1 行が 1 つの Geoshape 市区町村 ID。名前（full_name、表記ゆれは name_variants）と都道府県で引き、
+        valid_from・valid_to で時期を絞る。同じ名前の村が別の県や郡に何度も出てくるので、名前だけで 1 件に決めない。
+        現在の市区町村は current_city_code（代表点が入る市区町村）か、current_overlap の past_share（面積の割合）で見る。
+        boundary は基準日ごとの境界。1920 年より前と、1920〜1968 年の 12 月 31 日の時点は行政界変遷データベースの範囲（一部の県）だけ。
+      synonyms: [旧市町村, 合併前の市町村, 市町村合併の履歴, 歴史的行政区域, Geoshape 市区町村 ID]
+      examples:
+        - 合併前の村が今のどの市に入っているか知りたい
+        - 1950 年の市町村の境界を地図にしたい
+        - ある市が何回の合併でできたか知りたい
