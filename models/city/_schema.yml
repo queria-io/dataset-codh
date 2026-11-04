@@ -1,0 +1,55 @@
+version: 2
+
+models:
+- name: municipality
+  description: 歴史的行政区域データセットβ版の市区町村。1 行が 1 つの Geoshape 市区町村 ID。
+  access: public
+  columns:
+  - name: geoshape_city_id
+    data_tests: [unique, not_null]
+  - name: prefecture
+    data_tests: [not_null]
+  - name: full_name
+    data_tests: [not_null]
+  - name: is_current
+    data_tests: [not_null]
+  - name: point_source
+    # 原典に無かった代表点の出典が出てきたら止める
+    data_tests:
+    - not_null
+    - accepted_values:
+        arguments:
+          values: [P34, P05, P30, P18, P17, P28, centroid, other]
+  - name: geometry
+    data_tests: [not_null]
+- name: boundary
+  description: 基準日ごとの市区町村境界。1 行が 1 基準日の 1 市区町村。
+  access: public
+  columns:
+  - name: reference_date
+    data_tests: [not_null]
+  - name: geoshape_city_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('municipality')
+          field: geoshape_city_id
+  - name: source
+    data_tests:
+    - not_null
+    - accepted_values:
+        arguments:
+          values: [n03, hensen]
+  - name: geometry
+    data_tests: [not_null]
+- name: current_overlap
+  description: 過去の市区町村と現在の市区町村の重なり。1 行が ID と現在の市区町村の 1 組。
+  access: public
+  columns:
+  - name: geoshape_city_id
+    data_tests: [not_null]
+  - name: current_city_code
+    data_tests: [not_null]
+  - name: past_share
+    data_tests: [not_null]

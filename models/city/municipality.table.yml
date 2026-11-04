@@ -1,0 +1,98 @@
+schema: city
+name: municipality
+title: 市区町村（歴史的行政区域）
+description: |-
+  1889 年の市制・町村制以降に存在した市区町村。1 行が 1 つの Geoshape 市区町村 ID で、現存する市区町村と、合併や改称で消えた市町村の両方が入る。
+  ID は CODH が付けたもの。1968 年以降の市区町村コードを持つものは「コード 5 桁 + A + コードの開始年」（24322A1968）、持たないものは「都道府県コード 2 桁 + B + 7 桁」（24B0050015）。
+  改称や市制施行で名前が変わると別の ID になる。同じ名前の村が別の県や郡に何度も出てくるので、名前で引くときは都道府県と郡も見る。
+
+  有効期間は valid_from から valid_to まで（valid_to の日に消えた）。valid_to が NULL なら現存する。原典が年だけ・年月だけの値はその年・月の 1 日にして、精度を valid_from_precision・valid_to_precision に持つ。
+  代表点は CODH が選んだ点で、市区町村役場（国土数値情報 P34）、なければ旧役場の支所などの公的施設（P05）、郵便局（P30）、警察署（P18）、消防署（P17）、国の機関（P28）の順に、どれも無ければ境界の重心を使っている。
+  current_city_code は代表点が入る現在の市区町村（nlftp.boundary.municipality、国土数値情報 N03 の最新版。政令指定都市は区）。境界の重なりの割合は current_overlap にある。
+  海岸の埋立地などで代表点が現在の境界の外に出ると NULL になる。
+
+  出典: 『歴史的行政区域データセットβ版』（CODH作成） doi:10.20676/00000447 の市区町村 ID の一覧（GeoNLP 地名語辞書 geoshape-city、2023 年 10 月 18 日版）。Queria が列を分けて型を付け、現在の市区町村を付けて作成した。
+primary_key: [geoshape_city_id]
+sources:
+  - path: https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/geoshape-city-geolod.csv
+fields:
+  - name: geoshape_city_id
+    title: Geoshape 市区町村 ID
+    description: CODH が付けた ID。https://geoshape.ex.nii.ac.jp/city/resource/<ID>.html が各市区町村のページ
+  - name: city_code
+    title: 市区町村コード（5 桁）
+    description: 標準地域コード（検査数字なし）。1968 年より前に消えてコードの無い市町村は NULL
+    annotations: { queria: { semantic: { role: entity, name: city } } }
+  - name: lg_code
+    title: 全国地方公共団体コード
+    description: city_code に検査数字を付けた 6 桁
+    annotations: { queria: { semantic: { role: entity, name: city } } }
+  - name: prefecture_code
+    title: 都道府県コード
+    description: 2 桁
+    annotations: { queria: { semantic: { role: entity, name: prefecture } } }
+  - name: prefecture
+    title: 都道府県
+    annotations: { queria: { semantic: { role: entity, name: prefecture } } }
+  - name: county_or_city
+    title: 郡・政令指定都市
+    description: 町村は郡名、政令指定都市とその区は市名（札幌市）。そのほかの市は NULL
+  - name: name
+    title: 市区町村名
+    description: 接尾辞を除いた名前（員弁）
+  - name: suffix
+    title: 接尾辞
+    description: 市・区・町・村など
+    annotations: { queria: { semantic: { role: dimension } } }
+  - name: full_name
+    title: 市区町村名（接尾辞つき）
+    description: 員弁町
+  - name: address
+    title: 住所
+    description: 都道府県から書いた名前（三重県員弁郡員弁町）
+  - name: name_variants
+    title: 表記ゆれ
+    description: name の別の書き方のリスト。name 自身も入る（留辺蘂・留辺蕊）
+  - name: valid_from
+    title: 有効期間の開始
+  - name: valid_from_precision
+    title: 有効期間の開始の精度
+    description: day（日まで）、month（年月だけ。1 日にしてある）、year（年だけ。1 月 1 日にしてある）。開始の無いものは NULL
+    annotations: { queria: { semantic: { role: dimension } } }
+  - name: valid_to
+    title: 有効期間の終了
+    description: この日に消えた。現存するものは NULL
+  - name: valid_to_precision
+    title: 有効期間の終了の精度
+    description: day・month・year。現存するものは NULL
+    annotations: { queria: { semantic: { role: dimension } } }
+  - name: is_current
+    title: 現存
+    annotations: { queria: { semantic: { role: dimension } } }
+  - name: current_city_code
+    title: 現在の市区町村コード（5 桁）
+    description: 代表点が入る現在の市区町村。政令指定都市は区。代表点が現在の境界の外なら NULL
+    annotations: { queria: { semantic: { role: entity, name: city } } }
+  - name: current_lg_code
+    title: 現在の全国地方公共団体コード
+    description: current_city_code に検査数字を付けた 6 桁
+    annotations: { queria: { semantic: { role: entity, name: city } } }
+  - name: point_source
+    title: 代表点の出典
+    description: P34（市区町村役場）、P05（市町村役場等及び公的集会施設）、P30（郵便局）、P18（警察署）、P17（消防署）、P28（国・都道府県の機関）、centroid（境界の重心）、other（そのほか）
+    annotations: { queria: { semantic: { role: dimension } } }
+  - name: point_name
+    title: 代表点の施設名
+    description: 重心のときは NULL
+  - name: point_address
+    title: 代表点の所在地
+  - name: lng
+    title: 代表点の経度
+  - name: lat
+    title: 代表点の緯度
+  - name: geometry
+    title: 代表点
+    description: ポイント（経緯度）
+  - name: geolod_id
+    title: GeoLOD ID
+    description: GeoLOD（https://geolod.ex.nii.ac.jp/）の地名の ID

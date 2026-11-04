@@ -1,0 +1,29 @@
+name: "codh"
+version: "1.0.0"
+
+profile: "codh"
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros", "shared/macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  codh:
+    +database: codh
+    city:
+      +materialized: table
+      # boundary は基準日で引くので、基準日 → ID の順のまま行グループを 2,048 行にする
+      # （1 つの境界が平均約 9KB で、1 つ約 19MB。1 基準日の全国（1,900〜12,000 行）が 1〜6 個に収まる）。
+      # 設定はスキーマに付く (dbt は __dbt_tmp に書いてから改名するので、テーブルに付けても効かない)
+      # PR のビルド確認（ci/profiles.yml、target ci）は DuckLake でないので付けない
+      # 形は WKB で大きいので zstd で圧縮する（snappy より 4 割小さい）
+      +pre-hook:
+        - "{{ \"CALL codh.set_option('parquet_row_group_size', 2048, schema => 'city')\" if target.name != 'ci' else '' }}"
+        - "{{ \"CALL codh.set_option('parquet_compression', 'zstd', schema => 'city')\" if target.name != 'ci' else '' }}"
