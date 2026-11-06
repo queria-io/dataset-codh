@@ -1,21 +1,21 @@
-# dataset-codh
+# 歴史的行政区域データセット（CODH）
 
-ROIS-DS 人文学オープンデータ共同利用センター（CODH）の「歴史的行政区域データセットβ版」を Queria のカタログ（[data.queria.io](https://data.queria.io/)）へ取り込むデータセットです。
+ROIS-DS 人文学オープンデータ共同利用センター（CODH）の「歴史的行政区域データセットβ版」を、SQL で検索・集計できるテーブルにしたデータセットです。1889 年の市制・町村制以降に存在した市区町村に Geoshape 市区町村 ID を付け、有効期間・代表点・基準日ごとの境界を収録しています。合併や改称で消えた市町村も 1 つの ID で検索でき、現在のどの市区町村に入るかも持っています。
 
-## データ出典
+## 出典と利用条件
 
-[歴史的行政区域データセットβ版](https://geoshape.ex.nii.ac.jp/city/)の、市区町村 ID の一覧と基準日ごとの市区町村境界を表にします。
+[歴史的行政区域データセットβ版](https://geoshape.ex.nii.ac.jp/city/)の、市区町村 ID の一覧と基準日ごとの市区町村境界を加工しています。
 
 | 原典 | テーブル |
 | --- | --- |
-| [歴史的行政区域データセットβ版地名辞書](https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/)（`geoshape-city-geolod.csv`） | `city.municipality` |
+| [歴史的行政区域データセットβ版地名辞書](https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/)（`geoshape-city-geolod.csv`、2023 年 10 月 18 日版） | `city.municipality` |
 | 基準日ごとの全国の市区町村境界（`topojson/<基準日>/jp_city.h.topojson`、111 時点） | `city.boundary` |
 | 上の境界と Queria の `nlftp.boundary.municipality`（国土数値情報 行政区域データ） | `city.current_overlap` |
 
-データセットは [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) で提供されています。使うときは「『歴史的行政区域データセットβ版』（CODH作成） doi:10.20676/00000447」と出典を書き、Queria が加工したことを書いてください。
-境界のうち国土数値情報「行政区域データ」から作られた部分は、[国土数値情報の利用規約](https://nlftp.mlit.go.jp/ksj/other/agreement.html)に従います。
+- データセットは [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) で提供されています。使うときは「『歴史的行政区域データセットβ版』（CODH作成） doi:10.20676/00000447」と出典を書き、Queria が加工したものであることを明記してください
+- 境界のうち国土数値情報「行政区域データ」から作られた部分は、[国土数値情報の利用規約](https://nlftp.mlit.go.jp/ksj/other/agreement.html)に従います
 
-## 収録テーブル
+## テーブル
 
 | テーブル | 内容 |
 | --- | --- |
@@ -23,12 +23,11 @@ ROIS-DS 人文学オープンデータ共同利用センター（CODH）の「�
 | `city.boundary` | 1 行が 1 基準日の 1 市区町村の境界。1889〜2023 年の 111 時点で 54 万行 |
 | `city.current_overlap` | 1 行が ID と現在の市区町村の 1 組。最後の基準日の境界と現在の境界の重なりの面積と割合 |
 
-- 改称や市制施行で名前が変わると別の ID になります。同じ名前の村が別の県や郡に何度も出てくるので、名前で引くときは都道府県と郡も見てください
-- 境界の出典は 2 つあり、`source` で分かれます。`n03`（国土数値情報）は 1920 年以降で全国を覆います。`hensen`（筑波大学「行政界変遷データベース」）は 1889〜1968 年の各年 12 月 31 日で、1889〜1919 年は一部の県だけ、1920 年からは全国を覆います
-- 現在の市区町村への読み替えは、境界があれば `current_overlap` の `past_share` の大きい行、無ければ `municipality` の `current_city_code`（代表点）を使います
+## 使い方
+
+合併前の市町村が、現在のどの市区町村に入っているか:
 
 ```sql
--- 合併前の市町村が、現在のどの市区町村に入っているか
 SELECT m.address, m.valid_from, m.valid_to, o.current_city_code, round(o.past_share, 3) AS past_share
 FROM codh.city.municipality AS m
 JOIN codh.city.current_overlap AS o USING (geoshape_city_id)
@@ -36,6 +35,31 @@ WHERE m.prefecture = '三重県' AND m.county_or_city = '員弁郡' AND NOT m.is
   AND o.past_share >= 0.5
 ORDER BY m.valid_to;
 ```
+
+現在の市区町村への読み替えは、境界があれば `current_overlap` の `past_share` の大きい行、なければ `municipality` の `current_city_code`（代表点）を使います。
+
+## 市区町村 ID と有効期間
+
+- ID は CODH が付けたものです。1968 年以降の市区町村コードを持つものは「コード 5 桁 + A + コードの開始年」（24322A1968）、持たないものは「都道府県コード 2 桁 + B + 7 桁」（24B0050015）です。各市区町村のページは `https://geoshape.ex.nii.ac.jp/city/resource/<ID>.html` です
+- 改称や市制施行で名前が変わると別の ID になります。同じ名前の村が別の県や郡に何度も出てくるため、名前で検索するときは都道府県と郡も指定してください
+- 有効期間は `valid_from` から `valid_to` までです（`valid_to` の日に消えました）。`valid_to` が NULL なら現存します。原典が年だけ・年月だけの値はその年・月の 1 日にして、精度を `valid_from_precision`・`valid_to_precision` に持ちます
+
+## 代表点と現在の市区町村
+
+- 代表点は CODH が選んだ点です。市区町村役場（国土数値情報 P34）、なければ旧役場の支所などの公的施設（P05）、郵便局（P30）、警察署（P18）、消防署（P17）、国の機関（P28）の順に選び、どれもなければ境界の重心を使っています（`point_source`）
+- `current_city_code` は代表点が入る現在の市区町村です（`nlftp.boundary.municipality`、国土数値情報 N03 の最新版。政令指定都市は区）。海岸の埋立地などで代表点が現在の境界の外に出ると NULL になります
+- `current_overlap` は、ID ごとに最後の基準日の境界を現在の市区町村の境界と重ねたものです。`past_share` は過去の市区町村の面積のうち現在の市区町村に入る割合で、CODH のページの「過去の行政区域と重なる現在の市区町村一覧」と同じ計算です
+- 元の資料が違う境界を重ねるため、境界沿いに数 % 以下の小さな重なりが出ます。現存する市区町村も入ります（自分自身とほぼ 100% で重なります）
+- 境界のない ID（行政界変遷データベースの範囲外で 1920 年より前に消えた市町村など）は `current_overlap` に行がありません
+
+## 境界の注意
+
+- 境界の出典は 2 つあり、`source` で分かれます
+  - `n03`: 国土数値情報「行政区域データ」。1920 年 1 月 1 日、1950〜1965 年の国勢調査の年（10 月 1 日）と、1970 年以降の時点。全国を覆います
+  - `hensen`: 筑波大学「行政界変遷データベース」。1889〜1968 年の各年 12 月 31 日。1995 年の町丁字界を単位に所属を年ごとに記録したものです。1889〜1919 年は一部の県だけ（370 市町村ほど）で、1920 年からは全国を覆います。行政界変遷データベースにない地域（北海道の一部など）は、同じ時点に国土数値情報の形が数十行入っています
+- 同じ年に 2 つの出典の時点があるとき（1950 年 10 月 1 日と 12 月 31 日など）、作り方が違うため境界は一致しません。1985 年以前の境界は 1995 年以降と元の資料が違い、隣の市区町村と小さく重なったり離れたりすることがあります
+- 境界は CODH が配布する高解像度の TopoJSON（`jp_city.h`）で、座標は約 3m 単位に丸められています。小さな飛地が省かれていることがあります。丸めで壊れた形（自己交差など、全体の約 2.5%）は `ST_MakeValid` で修正しています。同じ基準日に同じ ID の形が複数あるもの（1920 年の舌辛村など）は 1 つに統合しています
+- 政令指定都市は区の単位です。所属未定地（`municipality` にない ID）は収録していません
 
 ## ビルド
 
@@ -45,6 +69,4 @@ uv sync
 scripts/build.sh   # fdl checkout → python main.py → fdl commit
 ```
 
-境界の TopoJSON は全部で約 2.5GB（変換した Parquet は約 3.4GB）あり、取得した基準日は `data/codh/boundary/` の Parquet を使い回します。
-元のデータセットは 2023 年 10 月の版から更新されていないので、定期実行はしません。main への push と手動の実行（workflow_dispatch）で Sync が回ります。
-PR のビルド確認（`.github/workflows/build.yml`）は 3 時点だけ取ります（`CODH_DATES=18891231,19501001,20230101`）。
+境界の TopoJSON は全部で約 2.5GB（変換した Parquet は約 3.4GB）あり、取得した基準日は `data/codh/boundary/` の Parquet を使い回します。元のデータセットは 2023 年 10 月から更新されていないため、定期実行はしません。main への push と手動の実行（workflow_dispatch）で Sync が実行されます。PR のビルド確認（`.github/workflows/build.yml`）は 3 時点だけ取得します（`CODH_DATES=18891231,19501001,20230101`）。
