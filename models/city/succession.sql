@@ -1,4 +1,5 @@
 {# 市区町村の前後の組。1 行が、消えた市区町村と、その区域を受け継いだ市区町村の 1 組。
+<<<<<<< HEAD
    次のどれかに当たる市区町村を後の市区町村とする。
    - point: 消えた日 (valid_to) 以後の最初の基準日の境界に、消えた市区町村の代表点が入る (合併・編入・改称)。
      その基準日までに受け継いだ市区町村がさらに合併していれば、その基準日の市区町村と組になる
@@ -17,15 +18,31 @@ last_dates as (
 ),
 
 gone as (
+=======
+   消えた日 (valid_to) に存在した市区町村のうち、次のどれかに当たるものを後の市区町村とする。
+   - point: その日以後の最初の基準日の境界に、消えた市区町村の代表点が入る (合併・編入・改称)
+   - split: その日に生まれ、代表点が消えた市区町村の最後の境界に入る (分割)
+   - current_city: どちらにも境界が無く、その日に生まれ、代表点の入る現在の市区町村が同じ #}
+
+with gone as (
+>>>>>>> origin/claude/project-thread-wsvd3e
     select
         m.geoshape_city_id,
         m.valid_to,
         m.geometry as point,
         m.current_city_code,
+<<<<<<< HEAD
         (select min(d.reference_date) from reference_dates as d where d.reference_date >= m.valid_to) as next_date,
         l.last_date
     from {{ ref('municipality') }} as m
     left join last_dates as l using (geoshape_city_id)
+=======
+        (select min(b.reference_date) from {{ ref('boundary') }} as b where b.reference_date >= m.valid_to)
+            as next_date,
+        (select max(b.reference_date) from {{ ref('boundary') }} as b where b.geoshape_city_id = m.geoshape_city_id)
+            as last_date
+    from {{ ref('municipality') }} as m
+>>>>>>> origin/claude/project-thread-wsvd3e
     where m.valid_to is not null
 ),
 
@@ -35,6 +52,11 @@ by_point as (
     join {{ ref('boundary') }} as b
         on b.reference_date = g.next_date and b.geoshape_city_id <> g.geoshape_city_id
         and st_intersects(b.geometry, g.point)
+<<<<<<< HEAD
+=======
+    join {{ ref('municipality') }} as n
+        on n.geoshape_city_id = b.geoshape_city_id and n.valid_from <= g.valid_to
+>>>>>>> origin/claude/project-thread-wsvd3e
 ),
 
 by_split as (
@@ -69,7 +91,11 @@ select
     p.successor_geoshape_city_id,
     g.valid_to as change_date,
     n.valid_from = g.valid_to as successor_is_new,
+<<<<<<< HEAD
     arg_min(p.method, case p.method when 'point' then 1 when 'split' then 2 else 3 end) as method
+=======
+    min(p.method order by case p.method when 'point' then 1 when 'split' then 2 else 3 end) as method
+>>>>>>> origin/claude/project-thread-wsvd3e
 from pairs as p
 join gone as g using (geoshape_city_id)
 join {{ ref('municipality') }} as n on n.geoshape_city_id = p.successor_geoshape_city_id
