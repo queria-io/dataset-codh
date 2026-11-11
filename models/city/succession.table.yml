@@ -4,9 +4,10 @@ title: 市区町村の前後の組
 description: |-
   消えた市区町村と、その区域を受け継いだ市区町村の組です。1 行が 1 組で、合併・編入・改称・分割をたどれます。
 
-  - 後の市区町村は、消えた日に存在した市区町村のうち、消えた市区町村の代表点を境界に含むもの（point）、またはその日に生まれて代表点が消えた市区町村の境界に入るもの（split）です
+  - 後の市区町村は、消えた日以後の最初の基準日に、消えた市区町村の代表点を境界に含むもの（point）、またはその日に生まれて代表点が消えた市区町村の境界に入るもの（split）です
   - 境界の無い市区町村は、その日に生まれ、代表点の入る現在の市区町村が同じものを後とします（current_city）
   - 合併で消えた市区町村は、新しくできた市区町村と組になります。編入では、続いている市区町村と組になります（successor_is_new が false）
+  - 消えた日から次の基準日までに、受け継いだ市区町村がさらに合併したときは、その基準日の市区町村と組になり、間の市区町村を飛ばします
 primary_key: [geoshape_city_id, successor_geoshape_city_id]
 fields:
   - name: geoshape_city_id
@@ -18,7 +19,7 @@ fields:
     description: 消えた市区町村の valid_to
   - name: successor_is_new
     title: 後の市区町村がその日に生まれたか
-    description: true は合併・改称・分割で新しくできた市区町村、false は編入した先
+    description: true は合併・改称・分割で新しくできた市区町村、false は編入した先。後の市区町村の valid_from が無いときは NULL
     annotations: { queria: { semantic: { role: dimension } } }
   - name: method
     title: 組にした方法
