@@ -11,6 +11,7 @@ ROIS-DS 人文学オープンデータ共同利用センター（CODH）の「�
 | [歴史的行政区域データセットβ版地名辞書](https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/)（`geoshape-city-geolod.csv`、2023 年 10 月 18 日版） | `city.municipality` |
 | 基準日ごとの全国の市区町村境界（`topojson/<基準日>/jp_city.h.topojson`、111 時点） | `city.boundary` |
 | 上の境界と Queria の `nlftp.boundary.municipality`（国土数値情報 行政区域データ） | `city.current_overlap` |
+| 上の市区町村 ID の一覧と境界 | `city.succession` |
 
 - データセットは [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) で提供されています。使うときは「『歴史的行政区域データセットβ版』（CODH作成） doi:10.20676/00000447」と出典を書き、Queria が加工したものであることを明記してください
 - 境界のうち国土数値情報「行政区域データ」から作られた部分は、[国土数値情報の利用規約](https://nlftp.mlit.go.jp/ksj/other/agreement.html)に従います
@@ -22,6 +23,7 @@ ROIS-DS 人文学オープンデータ共同利用センター（CODH）の「�
 | `city.municipality` | 1 行が 1 つの Geoshape 市区町村 ID。1889 年以降の市区町村の名前・有効期間・代表点と、代表点が入る現在の市区町村 |
 | `city.boundary` | 1 行が 1 基準日の 1 市区町村の境界。1889〜2023 年の 111 時点で 54 万行 |
 | `city.current_overlap` | 1 行が ID と現在の市区町村の 1 組。最後の基準日の境界と現在の境界の重なりの面積と割合 |
+| `city.succession` | 1 行が消えた市区町村と、その区域を受け継いだ市区町村の 1 組。合併・編入・改称・分割をたどれます |
 
 ## 使い方
 
@@ -34,6 +36,20 @@ JOIN codh.city.current_overlap AS o USING (geoshape_city_id)
 WHERE m.prefecture = '三重県' AND m.county_or_city = '員弁郡' AND NOT m.is_current
   AND o.past_share >= 0.5
 ORDER BY m.valid_to;
+```
+
+ある市区町村が、合併や改称でどう移り変わったか（田無町 → 田無市 → 西東京市）:
+
+```sql
+WITH RECURSIVE chain AS (
+  SELECT geoshape_city_id, 0 AS step FROM codh.city.municipality WHERE address = '東京都北多摩郡田無町'
+  UNION ALL
+  SELECT s.successor_geoshape_city_id, c.step + 1
+  FROM chain AS c JOIN codh.city.succession AS s USING (geoshape_city_id)
+)
+SELECT c.step, m.address, m.valid_from, m.valid_to
+FROM chain AS c JOIN codh.city.municipality AS m USING (geoshape_city_id)
+ORDER BY c.step;
 ```
 
 現在の市区町村への読み替えは、境界があれば `current_overlap` の `past_share` の大きい行、なければ `municipality` の `current_city_code`（代表点）を使います。
@@ -51,6 +67,13 @@ ORDER BY m.valid_to;
 - `current_overlap` は、ID ごとに最後の基準日の境界を現在の市区町村の境界と重ねたものです。`past_share` は過去の市区町村の面積のうち現在の市区町村に入る割合で、CODH のページの「過去の行政区域と重なる現在の市区町村一覧」と同じ計算です
 - 元の資料が違う境界を重ねるため、境界沿いに数 % 以下の小さな重なりが出ます。現存する市区町村も入ります（自分自身とほぼ 100% で重なります）
 - 境界のない ID（行政界変遷データベースの範囲外で 1920 年より前に消えた市町村など）は `current_overlap` に行がありません
+
+## 前後の市区町村
+
+- `succession` は、消えた日（`valid_to`）に存在した市区町村のうち、その日以後の最初の基準日の境界に、消えた市区町村の代表点を含むものを後の市区町村にしています（`method` が `point`）。合併・改称では新しくできた市区町村、編入では続いている市区町村と組になります（`successor_is_new`）
+- 分割では、その日に生まれた市区町村の代表点が、消えた市区町村の最後の境界に入るものも後にしています（`split`）
+- 境界がどちらにも無い組は、その日に生まれ、代表点の入る現在の市区町村が同じものを後にしています（`current_city`）
+- 代表点が境界の外に出る市区町村や、消えた日の後に境界の時点が無い市区町村（500 ほど）は、後の市区町村がありません
 
 ## 境界の注意
 
