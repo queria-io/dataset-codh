@@ -71,7 +71,8 @@ for d in $DATES; do
   tippecanoe "${common[@]}" -o "${layer}.pmtiles" -l "$layer" "${layer}.geojsonl"
   parts+=("${layer}.pmtiles")
 done
-tile-join --force -q --no-tile-size-limit -o "${name}.pmtiles" "${parts[@]}"
+tile-join --force -q --no-tile-size-limit -n "codh city boundaries" \
+  -N "CODH 歴史的行政区域データセットβ版の市区町村の境界 (${DATES})" -o "${name}.pmtiles" "${parts[@]}"
 pmtiles show "${name}.pmtiles" >/dev/null
 echo "==> 生成: ${WORK_DIR}/${name}.pmtiles ($(du -h "${name}.pmtiles" | cut -f1))"
 
