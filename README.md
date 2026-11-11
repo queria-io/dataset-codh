@@ -61,6 +61,19 @@ ORDER BY m.valid_to;
 - 境界は CODH が配布する高解像度の TopoJSON（`jp_city.h`）で、座標は約 3m 単位に丸められています。小さな飛地が省かれていることがあります。丸めで壊れた形（自己交差など、全体の約 2.5%）は `ST_MakeValid` で修正しています。同じ基準日に同じ ID の形が複数あるもの（1920 年の舌辛村など）は 1 つに統合しています
 - 政令指定都市は区の単位です。所属未定地（`municipality` にない ID）は収録していません
 
+## 地図のタイル
+
+`scripts/build-tiles.sh` は、5 つの基準日（1950・1965・1975・1980・1985 年の 10 月 1 日）の境界を 1 つの PMTiles にして、`https://assets.queria.io/codh/city-boundaries-<作成日>.pmtiles` に置きます。
+
+- レイヤーは基準日ごとに `city_19501001` のように分かれ、ズームは 4〜12 です
+- 地物の属性は `id`（geoshape_city_id）・`code`（その時点の市区町村コード。無い市町村は省きます）・`name`（郡または市と市区町村名）です
+- 元のデータセットは更新されないため、基準日を変えたときだけ作り直します。作り直したファイルは日付の違う名前で置き、配信中のファイルは差し替えません
+
+```bash
+scripts/build-tiles.sh --dry-run   # 作るまで（tippecanoe・tile-join・pmtiles CLI が要ります）
+scripts/build-tiles.sh             # R2 に置く（R2_ACCOUNT_ID・R2_ACCESS_KEY_ID・R2_SECRET_ACCESS_KEY が要ります）
+```
+
 ## ビルド
 
 ```bash
