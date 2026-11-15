@@ -17,8 +17,13 @@ clean-targets:
 models:
   codh:
     +database: codh
+    +materialized: table
     city:
       +materialized: table
+      raw:
+        +materialized: ephemeral
+      stg:
+        +materialized: ephemeral
       # boundary は基準日で引くので、基準日 → ID の順のまま行グループを 2,048 行にする
       # （1 つの境界が平均約 9KB で、1 つ約 19MB。1 基準日の全国（1,900〜12,000 行）が 1〜6 個に収まる）。
       # 設定はスキーマに付く (dbt は __dbt_tmp に書いてから改名するので、テーブルに付けても効かない)
