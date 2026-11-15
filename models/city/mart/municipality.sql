@@ -36,7 +36,9 @@ select
     p.lng,
     p.lat,
     p.geometry,
-    p.geolod_id
+    p.geolod_id,
+    f.sha256 as source_sha256
 from points as p
 left join current_city as c using (geoshape_city_id)
+left join {{ ref('stg_source_file') }} as f on list_contains(f.paths, p.source_path)
 order by p.geoshape_city_id

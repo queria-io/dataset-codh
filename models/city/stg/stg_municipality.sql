@@ -23,7 +23,8 @@ with parsed as (
         cast(longitude as double) as lng,
         cast(latitude as double) as lat,
         string_split(description, '/') as point_parts,
-        geolod_id
+        geolod_id,
+        filename as source_path
     from {{ ref('raw_municipality') }}
 )
 
