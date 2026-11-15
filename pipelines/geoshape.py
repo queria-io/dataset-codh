@@ -1,11 +1,13 @@
 """CODH「歴史的行政区域データセットβ版」の市区町村 ID と境界を取り出す。
 
-1. municipality: GeoNLP 地名語辞書の形の ID 一覧（geoshape-city-geolod.csv）をそのまま保存する
+1. municipality: GeoNLP 地名語辞書の形の ID 一覧（geoshape-city-geolod.csv）をそのまま保存し、
+   取得の記録を data/codh/source_file.parquet に書く
 2. boundary: 基準日ごとの全国の市区町村境界（jp_city.h.topojson、111 時点）を
    基準日ごとの Parquet（形は WKB）にする。今の BOUNDARY_FORMAT で書いた Parquet がある基準日は取り直さない
 
 出力:
 - data/codh/municipality.csv
+- data/codh/source_file.parquet
 - data/codh/boundary/<基準日>.parquet
 
 データソース: ROIS-DS 人文学オープンデータ共同利用センター（CODH）
@@ -19,12 +21,14 @@ from pathlib import Path
 
 import duckdb
 
-from shared.fetch import download, fetch, replacing, write_atomic
+from pipelines.source_file import write_source_files
+from shared.fetch import download, fetch, fetch_file, replacing
 
 logger = logging.getLogger("pipelines")
 
 BASE_URL = "https://geoshape.ex.nii.ac.jp/city"
 MUNICIPALITY_URL = "https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/geoshape-city-geolod.csv"
+MUNICIPALITY_PAGE = "https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/"
 USER_AGENT = "dataset-codh (+https://github.com/queria-io/dataset-codh)"
 OUT = Path("data/codh")
 DATE_LINK = re.compile(r'href="(\d{8})\.html"')
@@ -48,11 +52,13 @@ def selected(dates: list[str]) -> list[str]:
 
 
 def download_municipality() -> None:
-    body = fetch(MUNICIPALITY_URL, user_agent=USER_AGENT)
-    if not body.startswith(b"geolod_id,entry_id,"):
-        raise RuntimeError("geoshape-city-geolod.csv の見出しが想定と違う")
     OUT.mkdir(parents=True, exist_ok=True)
-    write_atomic(OUT / "municipality.csv", body)
+    path = OUT / "municipality.csv"
+    source = fetch_file(MUNICIPALITY_URL, path, user_agent=USER_AGENT)
+    with path.open("rb") as f:
+        if not f.read(19) == b"geolod_id,entry_id,":
+            raise RuntimeError("geoshape-city-geolod.csv の見出しが想定と違う")
+    write_source_files([{**source, "page_url": MUNICIPALITY_PAGE, "paths": [str(path)]}], OUT / "source_file.parquet")
 
 
 def to_parquet(topojson: Path, date: str, out: Path) -> int:
