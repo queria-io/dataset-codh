@@ -17,6 +17,7 @@ clean-targets:
 models:
   codh:
     +database: codh
+    +materialized: table
     city:
       +materialized: table
       raw:
