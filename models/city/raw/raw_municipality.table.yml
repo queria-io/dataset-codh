@@ -1,0 +1,4 @@
+schema: city
+name: raw_municipality
+description: 歴史的行政区域データセットβ版の市区町村の一覧（取得したままの CSV、全列が文字列）
+annotations: { queria: { published: false } }
