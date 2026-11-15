@@ -50,7 +50,7 @@ import sys, duckdb
 data, *dates = sys.argv[1:]
 c = duckdb.connect()
 c.sql("INSTALL spatial; LOAD spatial; INSTALL ducklake; INSTALL httpfs")
-c.sql(f"ATTACH 'ducklake:{data}/codh/ducklake.duckdb' AS codh (READ_ONLY)")
+c.sql(f"ATTACH 'ducklake:{data}/codh/metadata.db' AS codh (READ_ONLY)")
 for d in dates:
     c.sql(f"""COPY (
       SELECT geoshape_city_id AS id, city_code AS code,
