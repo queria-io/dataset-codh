@@ -1,5 +1,6 @@
-schema: city
-name: boundary
+---
+$schema: https://queria.io/schemas/table/v1.json
+table: city.boundary
 title: 市区町村の境界（基準日ごと）
 description: |-
   基準日ごとの市区町村の境界です。1 行が 1 基準日の 1 市区町村で、1889〜2023 年の 111 時点を収録しています。
@@ -19,11 +20,11 @@ fields:
   - name: source
     title: 境界の出典
     description: n03（国土数値情報 行政区域データ）、hensen（行政界変遷データベース）
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
   - name: prefecture
     title: 都道府県
     description: その時点の原典の値
-    annotations: { queria: { semantic: { role: entity, name: prefecture } } }
+    semantic: {role: entity, name: prefecture}
   - name: subprefecture
     title: 支庁・振興局
     description: 北海道の支庁・振興局など。その時点の原典の値
@@ -36,7 +37,8 @@ fields:
   - name: city_code
     title: 市区町村コード（5 桁）
     description: その時点の原典の値。コードのない市町村は NULL
-    annotations: { queria: { semantic: { role: entity, name: city } } }
+    semantic: {role: entity, name: city}
   - name: geometry
     title: 境界
     description: マルチポリゴン（経緯度）
+---

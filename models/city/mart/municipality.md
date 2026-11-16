@@ -1,5 +1,6 @@
-schema: city
-name: municipality
+---
+$schema: https://queria.io/schemas/table/v1.json
+table: city.municipality
 title: 市区町村（歴史的行政区域）
 description: |-
   1889 年以降に存在した市区町村です。1 行が 1 つの Geoshape 市区町村 ID で、名前・有効期間・代表点と、代表点が入る現在の市区町村を持ちます。
@@ -17,18 +18,18 @@ fields:
   - name: city_code
     title: 市区町村コード（5 桁）
     description: 標準地域コード。1968 年より前に消えた市町村は NULL
-    annotations: { queria: { semantic: { role: entity, name: city } } }
+    semantic: {role: entity, name: city}
   - name: lg_code
     title: 全国地方公共団体コード
     description: city_code に検査数字を付けた 6 桁
-    annotations: { queria: { semantic: { role: entity, name: city } } }
+    semantic: {role: entity, name: city}
   - name: prefecture_code
     title: 都道府県コード
     description: 2 桁
-    annotations: { queria: { semantic: { role: entity, name: prefecture } } }
+    semantic: {role: entity, name: prefecture}
   - name: prefecture
     title: 都道府県
-    annotations: { queria: { semantic: { role: entity, name: prefecture } } }
+    semantic: {role: entity, name: prefecture}
   - name: county_or_city
     title: 郡・政令指定都市
     description: 町村は郡名、政令指定都市の区は市名。ほかの市は NULL
@@ -38,7 +39,7 @@ fields:
   - name: suffix
     title: 接尾辞
     description: 市・区・町・村など
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
   - name: full_name
     title: 市区町村名（接尾辞つき）
     description: 員弁町
@@ -53,29 +54,29 @@ fields:
   - name: valid_from_precision
     title: 有効期間の開始の精度
     description: day・month・year。month と year は 1 日にしています
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
   - name: valid_to
     title: 有効期間の終了
     description: この日に消えました。現存するものは NULL
   - name: valid_to_precision
     title: 有効期間の終了の精度
     description: day・month・year。現存するものは NULL
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
   - name: is_current
     title: 現存
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
   - name: current_city_code
     title: 現在の市区町村コード（5 桁）
     description: 代表点が入る現在の市区町村（政令指定都市は区）
-    annotations: { queria: { semantic: { role: entity, name: city } } }
+    semantic: {role: entity, name: city}
   - name: current_lg_code
     title: 現在の全国地方公共団体コード
     description: current_city_code に検査数字を付けた 6 桁
-    annotations: { queria: { semantic: { role: entity, name: city } } }
+    semantic: {role: entity, name: city}
   - name: point_source
     title: 代表点の出典
     description: P34（市区町村役場）・P05・P30・P18・P17・P28・centroid・other
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
   - name: point_name
     title: 代表点の施設名
     description: 重心のときは NULL
@@ -94,3 +95,4 @@ fields:
   - name: source_sha256
     title: 元のファイルの SHA-256
     description: この行を読んだファイルの SHA-256 です。source_file の sha256 に当たります
+---
