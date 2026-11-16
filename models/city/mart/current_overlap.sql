@@ -25,7 +25,7 @@ piece as (
         st_area(b.geometry) as current_deg2,
         cos(radians(st_y(st_centroid(l.geometry)))) as lat_factor
     from last_boundary as l
-    join nlftp.boundary.municipality as b on st_intersects(l.geometry, b.geometry)
+    join {{ ref('stg_nlftp_municipality') }} as b on st_intersects(l.geometry, b.geometry)
 )
 
 select
