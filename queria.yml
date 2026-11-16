@@ -1,6 +1,4 @@
-# この dataset.yml は fdl commit が読む（FDL の dataset.json を YAML で書いたもの）。
-# 表の説明は models/ の *.table.yml に書く。表と列の型・NULL・行数は fdl commit がカタログから埋める。
-# Queria だけの項目（テーマ・カバー・列の意味）は annotations.queria に書く。
+$schema: https://queria.io/schemas/dataset/v1.json
 name: codh
 title: 歴史的行政区域データセット（CODH）
 description: |-
@@ -19,7 +17,6 @@ keywords:
   - CODH
 homepage: https://github.com/queria-io/dataset-codh
 language: ja
-
 licenses:
   - CC-BY-4.0
   - JP-MLIT-NLFTP
@@ -44,24 +41,21 @@ contributors:
 
 spatial_coverage: [JP]
 update_frequency: irregular
-
 schemas:
   - name: city
     title: 歴史的行政区域
 
-annotations:
-  queria:
-    themes: [land_climate]
-    cover: 🗾
-    ai_context:
-      instructions: |
-        合併前の市町村名や昔の住所を、現在の市区町村に読み替えるのに使う。
-        municipality は 1 行が 1 つの Geoshape 市区町村 ID。名前（full_name、表記ゆれは name_variants）と都道府県で引き、
-        valid_from・valid_to で時期を絞る。同じ名前の村が別の県や郡に何度も出てくるので、名前だけで 1 件に決めない。
-        現在の市区町村は current_city_code（代表点が入る市区町村）か、current_overlap の past_share（面積の割合）で見る。
-        boundary は基準日ごとの境界。1889〜1919 年は一部の県だけで、1920 年から全国を覆う。地図にするときは reference_date で 1 時点に絞る。
-      synonyms: [旧市町村, 合併前の市町村, 市町村合併の履歴, 歴史的行政区域, Geoshape 市区町村 ID]
-      examples:
-        - 合併前の村が今のどの市に入っているか知りたい
-        - 1950 年の市町村の境界を地図にしたい
-        - ある市が何回の合併でできたか知りたい
+themes: [land_climate]
+cover: 🗾
+ai_context:
+  instructions: |
+    合併前の市町村名や昔の住所を、現在の市区町村に読み替えるのに使う。
+    municipality は 1 行が 1 つの Geoshape 市区町村 ID。名前（full_name、表記ゆれは name_variants）と都道府県で引き、
+    valid_from・valid_to で時期を絞る。同じ名前の村が別の県や郡に何度も出てくるので、名前だけで 1 件に決めない。
+    現在の市区町村は current_city_code（代表点が入る市区町村）か、current_overlap の past_share（面積の割合）で見る。
+    boundary は基準日ごとの境界。1889〜1919 年は一部の県だけで、1920 年から全国を覆う。地図にするときは reference_date で 1 時点に絞る。
+  synonyms: [旧市町村, 合併前の市町村, 市町村合併の履歴, 歴史的行政区域, Geoshape 市区町村 ID]
+  examples:
+    - 合併前の村が今のどの市に入っているか知りたい
+    - 1950 年の市町村の境界を地図にしたい
+    - ある市が何回の合併でできたか知りたい

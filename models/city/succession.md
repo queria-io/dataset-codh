@@ -1,5 +1,6 @@
-schema: city
-name: succession
+---
+$schema: https://queria.io/schemas/table/v1.json
+table: city.succession
 title: 市区町村の前後の組
 description: |-
   消えた市区町村と、その区域を受け継いだ市区町村の組です。1 行が 1 組で、合併・編入・改称・分割をたどれます。
@@ -20,8 +21,9 @@ fields:
   - name: successor_is_new
     title: 後の市区町村がその日に生まれたか
     description: true は合併・改称・分割で新しくできた市区町村、false は編入した先。後の市区町村の valid_from が無いときは NULL
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
   - name: method
     title: 組にした方法
     description: point（代表点が後の境界に入る）・split（後の代表点が前の境界に入る）・current_city（境界が無く、現在の市区町村が同じ）
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
+---

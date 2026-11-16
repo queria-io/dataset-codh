@@ -1,5 +1,6 @@
-schema: city
-name: source_file
+---
+$schema: https://queria.io/schemas/table/v1.json
+table: city.source_file
 title: 取得したファイル
 description: |-
   このデータセットを作るときに取得したファイルの一覧です。1 行が 1 つのファイルです。
@@ -29,3 +30,4 @@ fields:
   - name: last_modified
     title: Last-Modified
     description: 取得したときの応答の Last-Modified ヘッダー
+---

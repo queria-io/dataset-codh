@@ -1,5 +1,6 @@
-schema: city
-name: current_overlap
+---
+$schema: https://queria.io/schemas/table/v1.json
+table: city.current_overlap
 title: 過去の市区町村と現在の市区町村の重なり
 description: |-
   過去の市区町村が、現在のどの市区町村にどれだけ入っているかです。1 行が 1 つの Geoshape 市区町村 ID と現在の市区町村の 1 組です。
@@ -16,20 +17,21 @@ fields:
   - name: boundary_source
     title: 重ねた境界の出典
     description: n03 / hensen
-    annotations: { queria: { semantic: { role: dimension } } }
+    semantic: {role: dimension}
   - name: current_city_code
     title: 現在の市区町村コード（5 桁）
-    annotations: { queria: { semantic: { role: entity, name: city } } }
+    semantic: {role: entity, name: city}
   - name: current_lg_code
     title: 現在の全国地方公共団体コード
-    annotations: { queria: { semantic: { role: entity, name: city } } }
+    semantic: {role: entity, name: city}
   - name: overlap_area_km2
     title: 重なりの面積
     description: km²。重心の緯度で度の面積から換算
-    annotations: { queria: { semantic: { role: measure, agg: sum } } }
+    semantic: {role: measure, agg: sum}
   - name: past_share
     title: 過去の市区町村に占める割合
     description: 0〜1。重なりの面積 / 過去の市区町村の面積
   - name: current_share
     title: 現在の市区町村に占める割合
     description: 0〜1。重なりの面積 / 現在の市区町村の面積
+---
