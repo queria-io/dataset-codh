@@ -1,0 +1,54 @@
+$schema: https://tabledoc.queria.io/schemas/dataset/v1.json
+name: codh
+title: 歴史的行政区域データセット（CODH）
+description: |-
+  1889 年の市制・町村制以降に存在した市区町村の一覧と、基準日ごとの境界です。合併や改称で消えた市町村にも ID があり、現在のどの市区町村に入るかを持ちます。
+
+  出典：『歴史的行政区域データセットβ版』（CODH作成） doi:10.20676/00000447。Queria が加工したものです。
+topics:
+  - 市区町村
+  - 行政区域
+  - 市町村合併
+  - 廃置分合
+  - 旧市町村
+  - 境界
+  - 歴史地名
+  - Geoshape
+  - CODH
+homepage: https://github.com/queria-io/dataset-codh
+language: ja
+licenses:
+  - CC-BY-4.0
+  - JP-MLIT-NLFTP
+
+sources:
+  - id: city
+    title: 歴史的行政区域データセットβ版（CODH）
+    path: https://geoshape.ex.nii.ac.jp/city/
+  - id: dataset
+    title: 歴史的行政区域データセットβ版 データセット（CODH）
+    path: https://geoshape.ex.nii.ac.jp/city/dataset/
+  - id: geoshape-city
+    title: 歴史的行政区域データセットβ版地名辞書（GeoNLP）
+    path: https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/
+  - id: ksjtmplt-n03-v3_1
+    title: 国土数値情報 行政区域データ（国土交通省）
+    path: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-v3_1.html
+
+contributors:
+  - id: codh
+    title: ROIS-DS 人文学オープンデータ共同利用センター（CODH）
+    path: https://codh.rois.ac.jp/
+    roles: [rightsHolder]
+  - id: nlftp
+    title: 国土交通省
+    path: https://nlftp.mlit.go.jp/
+    roles: [rightsHolder]
+
+spatial_coverage: [JP]
+update_frequency: irregular
+schemas:
+  - name: city
+    title: 歴史的行政区域
+
+synonyms: [旧市町村, 合併前の市町村, 市町村合併の履歴, 歴史的行政区域, Geoshape 市区町村 ID]

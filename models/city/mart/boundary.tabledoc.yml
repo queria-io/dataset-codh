@@ -1,6 +1,4 @@
----
-$schema: https://queria.io/schemas/table/v1.json
-table: city.boundary
+$schema: https://tabledoc.queria.io/schemas/table/v1.json
 title: 市区町村の境界（基準日ごと）
 description: |-
   基準日ごとの市区町村の境界です。1 行が 1 基準日の 1 市区町村で、1889〜2023 年の 111 時点を収録しています。
@@ -10,8 +8,9 @@ description: |-
   - 1985 年以前の境界は資料が違い、隣と小さく重なったり離れたりします
 primary_key: [reference_date, geoshape_city_id]
 sources:
-  - path: https://geoshape.ex.nii.ac.jp/city/time/
-fields:
+  - id: time
+    path: https://geoshape.ex.nii.ac.jp/city/time/
+columns:
   - name: reference_date
     title: 基準日
     description: hensen の時点は年だけが判明していて、12 月 31 日にしています
@@ -20,11 +19,11 @@ fields:
   - name: source
     title: 境界の出典
     description: n03（国土数値情報 行政区域データ）、hensen（行政界変遷データベース）
-    semantic: {role: dimension}
+    dimension: categorical
   - name: prefecture
     title: 都道府県
     description: その時点の原典の値
-    semantic: {role: entity, name: prefecture}
+    entity: {type: foreign, name: prefecture}
   - name: subprefecture
     title: 支庁・振興局
     description: 北海道の支庁・振興局など。その時点の原典の値
@@ -37,8 +36,7 @@ fields:
   - name: city_code
     title: 市区町村コード（5 桁）
     description: その時点の原典の値。コードのない市町村は NULL
-    semantic: {role: entity, name: city}
+    entity: {type: foreign, name: city}
   - name: geometry
     title: 境界
     description: マルチポリゴン（経緯度）
----
