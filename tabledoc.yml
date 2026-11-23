@@ -25,25 +25,25 @@ licenses:
 sources:
   - id: city
     title: 歴史的行政区域データセットβ版（CODH）
-    path: https://geoshape.ex.nii.ac.jp/city/
+    url: https://geoshape.ex.nii.ac.jp/city/
   - id: dataset
     title: 歴史的行政区域データセットβ版 データセット（CODH）
-    path: https://geoshape.ex.nii.ac.jp/city/dataset/
+    url: https://geoshape.ex.nii.ac.jp/city/dataset/
   - id: geoshape-city
     title: 歴史的行政区域データセットβ版地名辞書（GeoNLP）
-    path: https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/
+    url: https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/
   - id: ksjtmplt-n03-v3_1
     title: 国土数値情報 行政区域データ（国土交通省）
-    path: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-v3_1.html
+    url: https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-v3_1.html
 
 contributors:
   - id: codh
     title: ROIS-DS 人文学オープンデータ共同利用センター（CODH）
-    path: https://codh.rois.ac.jp/
+    url: https://codh.rois.ac.jp/
     roles: [rightsHolder]
   - id: nlftp
     title: 国土交通省
-    path: https://nlftp.mlit.go.jp/
+    url: https://nlftp.mlit.go.jp/
     roles: [rightsHolder]
 
 spatial_coverage: [JP]
