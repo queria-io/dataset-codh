@@ -9,7 +9,7 @@ description: |-
 primary_key: [geoshape_city_id]
 sources:
   - id: geoshape-city-geolod
-    path: https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/geoshape-city-geolod.csv
+    url: https://geonlp.ex.nii.ac.jp/dictionary/geoshape-city/geoshape-city-geolod.csv
 columns:
   - name: geoshape_city_id
     title: Geoshape 市区町村 ID
@@ -17,18 +17,18 @@ columns:
   - name: city_code
     title: 市区町村コード（5 桁）
     description: 標準地域コード。1968 年より前に消えた市町村は NULL
-    entity: {type: foreign, name: city}
+    entity: city
   - name: lg_code
     title: 全国地方公共団体コード
     description: city_code に検査数字を付けた 6 桁
-    entity: {type: foreign, name: city}
+    entity: city
   - name: prefecture_code
     title: 都道府県コード
     description: 2 桁
-    entity: {type: foreign, name: prefecture}
+    entity: prefecture
   - name: prefecture
     title: 都道府県
-    entity: {type: foreign, name: prefecture}
+    entity: prefecture
   - name: county_or_city
     title: 郡・政令指定都市
     description: 町村は郡名、政令指定都市の区は市名。ほかの市は NULL
@@ -67,11 +67,11 @@ columns:
   - name: current_city_code
     title: 現在の市区町村コード（5 桁）
     description: 代表点が入る現在の市区町村（政令指定都市は区）
-    entity: {type: foreign, name: city}
+    entity: city
   - name: current_lg_code
     title: 現在の全国地方公共団体コード
     description: current_city_code に検査数字を付けた 6 桁
-    entity: {type: foreign, name: city}
+    entity: city
   - name: point_source
     title: 代表点の出典
     description: P34（市区町村役場）・P05・P30・P18・P17・P28・centroid・other

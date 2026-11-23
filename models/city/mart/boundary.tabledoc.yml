@@ -9,7 +9,7 @@ description: |-
 primary_key: [reference_date, geoshape_city_id]
 sources:
   - id: time
-    path: https://geoshape.ex.nii.ac.jp/city/time/
+    url: https://geoshape.ex.nii.ac.jp/city/time/
 columns:
   - name: reference_date
     title: 基準日
@@ -23,7 +23,7 @@ columns:
   - name: prefecture
     title: 都道府県
     description: その時点の原典の値
-    entity: {type: foreign, name: prefecture}
+    entity: prefecture
   - name: subprefecture
     title: 支庁・振興局
     description: 北海道の支庁・振興局など。その時点の原典の値
@@ -36,7 +36,7 @@ columns:
   - name: city_code
     title: 市区町村コード（5 桁）
     description: その時点の原典の値。コードのない市町村は NULL
-    entity: {type: foreign, name: city}
+    entity: city
   - name: geometry
     title: 境界
     description: マルチポリゴン（経緯度）
