@@ -63,7 +63,6 @@ columns:
     dimension: categorical
   - name: is_current
     title: 現存
-    dimension: categorical
   - name: current_city_code
     title: 現在の市区町村コード（5 桁）
     description: 代表点が入る現在の市区町村（政令指定都市は区）
