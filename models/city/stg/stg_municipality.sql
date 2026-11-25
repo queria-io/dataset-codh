@@ -5,7 +5,7 @@ with parsed as (
         entry_id as geoshape_city_id,
         -- 1968 年以降のコードが無い市区町村は都道府県のコード（08000 など）が入っている。
         -- 複数入っていること（01206/01000）がある
-        list_filter(string_split(code, '/'), c -> c not like '%000')[1] as city_code,
+        list_filter(string_split(code, '/'), lambda c: c not like '%000')[1] as city_code,
         left(entry_id, 2) as prefecture_code,
         prefname as prefecture,
         nullif(countyname, '') as county_or_city,
@@ -35,7 +35,7 @@ select
     case
         when point_parts[2] = 'ポリゴンの重心' then 'centroid'
         else coalesce(
-            list_extract(list_filter(list_transform(point_parts, p -> regexp_extract(p, '^(P\d\d)-', 1)), p -> p <> ''), 1),
+            list_extract(list_filter(list_transform(point_parts, lambda p: regexp_extract(p, '^(P\d\d)-', 1)), lambda p: p <> ''), 1),
             'other'
         )
     end as point_source,
